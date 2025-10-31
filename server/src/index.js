@@ -9,7 +9,7 @@ import Post from "./models/Post.js";
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 3001;
 const mongoUri = process.env.MONGODB_URI || "";
 
 app.use(cors());
@@ -41,7 +41,9 @@ async function start() {
     if (!mongoUri) {
       console.warn("MONGODB_URI not set. Server will run without DB connection.");
     } else {
-      await mongoose.connect(mongoUri);
+      await mongoose.connect(mongoUri, {
+        dbName: "ait_social"
+      });
       console.log("Connected to MongoDB");
     }
 

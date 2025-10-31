@@ -1,7 +1,18 @@
 import { Router } from "express";
 import Account from "../models/Account.js";
+import bcrypt from "bcrypt";
 
 const router = Router();
+
+// List all accounts (for testing)
+router.get("/", async (_req, res) => {
+  try {
+    const accounts = await Account.find().select("username email createdAt").limit(50);
+    res.json(accounts);
+  } catch (_err) {
+    res.status(500).json({ error: "failed to fetch accounts" });
+  }
+});
 
 // Create account
 router.post("/register", async (req, res) => {
@@ -11,12 +22,16 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ error: "username, email, and password are required" });
     }
 
-    const account = new Account({ username, email });
-    account.password = password; // triggers hashing via virtual
+    const saltRounds = 10;
+    const salt = await bcrypt.genSalt(saltRounds);
+    const passwordHash = await bcrypt.hash(password, salt);
+    
+    const account = new Account({ username, email, passwordHash });
     await account.save();
 
     return res.status(201).json({ id: account._id, username: account.username, email: account.email });
   } catch (error) {
+    console.error("Registration error:", error);
     if (error.code === 11000) {
       return res.status(409).json({ error: "username or email already exists" });
     }
@@ -40,7 +55,7 @@ router.post("/login", async (req, res) => {
     const ok = await account.comparePassword(password);
     if (!ok) return res.status(401).json({ error: "invalid credentials" });
 
-    return res.status(204).end();
+    return res.json({ id: account._id, username: account.username, email: account.email });
   } catch (_error) {
     return res.status(500).json({ error: "failed to login" });
   }
