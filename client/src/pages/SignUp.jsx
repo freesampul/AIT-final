@@ -39,59 +39,63 @@ export default function SignUp() {
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-80px)] px-6 py-12">
       <div className="w-full max-w-md">
-        <div className="mb-12">
-          <h1 className="text-5xl font-light tracking-tight text-white mb-3">Sign Up</h1>
-          <p className="text-neutral-400 text-sm">Create your account</p>
+        <div className="mb-12 text-center">
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-white via-neutral-200 to-neutral-400 bg-clip-text text-transparent mb-4">
+            Sign Up
+          </h1>
+          <p className="text-neutral-400">Create your account to get started</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <input
-              type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              className="w-full px-5 py-4 bg-neutral-800 border border-neutral-700 rounded-2xl text-white placeholder:text-neutral-400 hover:border-neutral-600 focus:outline-none focus:border-white transition-all duration-200"
-            />
-          </div>
-          <div>
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-5 py-4 bg-neutral-800 border border-neutral-700 rounded-2xl text-white placeholder:text-neutral-400 hover:border-neutral-600 focus:outline-none focus:border-white transition-all duration-200"
-            />
-          </div>
-          <div>
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-5 py-4 bg-neutral-800 border border-neutral-700 rounded-2xl text-white placeholder:text-neutral-400 hover:border-neutral-600 focus:outline-none focus:border-white transition-all duration-200"
-            />
-          </div>
-          {error && (
-            <div className="text-red-400 text-sm bg-red-950/20 border border-red-900/30 px-4 py-3 rounded-2xl">
-              {error}
+        <div className="bg-neutral-900/50 backdrop-blur-sm border border-neutral-800/50 rounded-3xl p-8 shadow-2xl">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                className="w-full px-6 py-4 bg-neutral-800/50 border border-neutral-700/50 rounded-2xl text-white placeholder:text-neutral-500 hover:border-neutral-600 focus:outline-none focus:border-white/50 focus:bg-neutral-800/70 transition-all duration-300"
+              />
             </div>
-          )}
-          {success && (
-            <div className="text-green-400 text-sm bg-green-950/20 border border-green-900/30 px-4 py-3 rounded-2xl">
-              Account created! Redirecting...
+            <div>
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-6 py-4 bg-neutral-800/50 border border-neutral-700/50 rounded-2xl text-white placeholder:text-neutral-500 hover:border-neutral-600 focus:outline-none focus:border-white/50 focus:bg-neutral-800/70 transition-all duration-300"
+              />
             </div>
-          )}
-          <button
-            type="submit"
-            className="w-full bg-white text-black font-medium py-4 rounded-2xl hover:bg-neutral-100 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-md"
-          >
-            Sign Up
-          </button>
-        </form>
+            <div>
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full px-6 py-4 bg-neutral-800/50 border border-neutral-700/50 rounded-2xl text-white placeholder:text-neutral-500 hover:border-neutral-600 focus:outline-none focus:border-white/50 focus:bg-neutral-800/70 transition-all duration-300"
+              />
+            </div>
+            {error && (
+              <div className="text-red-400 text-sm bg-red-950/30 border border-red-900/50 px-4 py-3 rounded-xl backdrop-blur-sm">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="text-green-400 text-sm bg-green-950/30 border border-green-900/50 px-4 py-3 rounded-xl backdrop-blur-sm">
+                Account created! Redirecting...
+              </div>
+            )}
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-white to-neutral-200 text-black font-semibold py-4 rounded-2xl hover:from-neutral-100 hover:to-neutral-300 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-lg hover:shadow-xl"
+            >
+              Sign Up
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

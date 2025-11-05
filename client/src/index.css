@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 * {
   margin: 0;
@@ -9,8 +7,9 @@
 }
 
 body {
-  background-color: #171717; /* neutral-900 */
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
   color: white;
+  min-height: 100vh;
 }
 
 input,
@@ -19,16 +18,26 @@ input[type="email"],
 input[type="password"],
 input[type="search"],
 textarea,
-select,
-button {
+select {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
+  background-color: transparent;
 }
 
 input:focus,
 textarea:focus,
-select:focus,
+select:focus {
+  outline: none;
+}
+
+button {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
 button:focus {
   outline: none;
 }

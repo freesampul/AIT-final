@@ -26,7 +26,18 @@ app.get("/api/feed", async (_req, res) => {
       .populate("user", "username email")
       .sort({ postedAt: -1 })
       .limit(100);
-    res.json(posts);
+    
+    res.json(
+      posts.map((p) => ({
+        _id: p._id,
+        id: p._id,
+        text: p.text,
+        location: p.location,
+        postedAt: p.postedAt,
+        user: p.user,
+        likes: p.likes || [],
+      }))
+    );
   } catch (_err) {
     res.status(500).json({ error: "failed to load feed" });
   }

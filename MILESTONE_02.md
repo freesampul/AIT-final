@@ -3,15 +3,19 @@ Milestone 02
 
 Repository Link
 ---
-(TODO: add the link to your repository in github, such as, https://github.com/[COURSE]/[REPO_NAME])
+https://github.com/freesampul/AIT-final
 
 Special Instructions for Using Form (or Login details if auth is part of your project)
 ---
-(TODO: if your app requires special instructions to use or if your app requires authentication, add information here; otherwise, leave blank)
+Navigate to the sign in to create an acount: https://ait-final-1bnl.onrender.com/signup
+Once the account is created, you can use the sign in page: https://ait-final-1bnl.onrender.com/signin
+
+After authentication, you will be able to access the posting form on the home page.
 
 URL for form 
 ---
-(TODO: add link to a functioning form; this will likely be `your-repo-name.onrender.com`)
+Navigate to the sign in to create an acount: https://ait-final-1bnl.onrender.com/signup
+Once the account is created, you can use the sign in page: https://ait-final-1bnl.onrender.com/signin
 
 URL for form result
 ---
