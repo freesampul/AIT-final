@@ -21,10 +21,14 @@ URL for form result
 ---
 (TODO: if applicable, add link to page that shows results of submitting form)
 
-URL to github that shows line of code where research topic(s) are used / implemented
+Navigating to the home route displays a feed if user is logged in. 
 --- 
 (TODO: add link to github url that shows line or lines of code that demonstrate in progress work on at least one research topic)
 
-References 
----
-(TODO: if applicable, links to annotated lines of code in github repository that were based off of tutorials / articles / sample projects)
+
+Using react to render each post on the home page instead of handlebars to feed in data.
+Post schema: 
+https://github.com/freesampul/AIT-final/blob/master/server/src/routes/posts.js
+
+Home feed:
+https://github.com/freesampul/AIT-final/blob/master/server/src/index.js
