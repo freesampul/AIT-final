@@ -81,17 +81,21 @@ export default function Home() {
     e.preventDefault();
     setLoading(true);
 
+    const postData = {
+      text: postText,
+      location: location || "",
+      latitude: latitude,
+      longitude: longitude,
+      userId: userId,
+    };
+
+    console.log("Creating post with data:", postData);
+
     try {
       const res = await fetch("http://localhost:3001/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text: postText,
-          location: location || "",
-          latitude: latitude,
-          longitude: longitude,
-          userId: userId,
-        }),
+        body: JSON.stringify(postData),
       });
 
       if (res.ok) {
@@ -340,9 +344,16 @@ export default function Home() {
                 userLocation={userLocation}
               />
             </div>
-            <p className="text-neutral-500 text-xs mt-3 text-center">
-              {posts.filter(p => p.latitude && p.longitude).length} posts with locations
-            </p>
+            <div className="mt-3 text-center">
+              <p className="text-neutral-500 text-xs">
+                {posts.filter(p => p.latitude && p.longitude).length} {posts.filter(p => p.latitude && p.longitude).length === 1 ? 'post' : 'posts'} with locations
+              </p>
+              {posts.filter(p => p.latitude && p.longitude).length === 0 && (
+                <p className="text-neutral-600 text-xs mt-1">
+                  Create a post with location to see it on the map
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>

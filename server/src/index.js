@@ -28,17 +28,26 @@ app.get("/api/feed", async (_req, res) => {
       .limit(100);
     
     res.json(
-      posts.map((p) => ({
-        _id: p._id,
-        id: p._id,
-        text: p.text,
-        location: p.location,
-        latitude: p.latitude,
-        longitude: p.longitude,
-        postedAt: p.postedAt,
-        user: p.user,
-        likes: p.likes || [],
-      }))
+      posts.map((p) => {
+        const postData = {
+          _id: p._id,
+          id: p._id,
+          text: p.text,
+          location: p.location || "",
+          postedAt: p.postedAt,
+          user: p.user,
+          likes: p.likes || [],
+        };
+        
+        // Only include coordinates if they exist and are valid numbers
+        if (p.latitude != null && p.longitude != null && 
+            !isNaN(p.latitude) && !isNaN(p.longitude)) {
+          postData.latitude = p.latitude;
+          postData.longitude = p.longitude;
+        }
+        
+        return postData;
+      })
     );
   } catch (_err) {
     res.status(500).json({ error: "failed to load feed" });

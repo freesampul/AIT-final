@@ -14,17 +14,55 @@ router.post("/", async (req, res) => {
     const user = await Account.findById(userId);
     if (!user) return res.status(404).json({ error: "user not found" });
 
-    const post = await Post.create({
+    // Parse coordinates if provided
+    let lat = null;
+    let lng = null;
+    
+    // Check if latitude and longitude are provided and valid
+    if (latitude !== null && latitude !== undefined && latitude !== "" && !isNaN(Number(latitude))) {
+      lat = Number(latitude);
+      if (isNaN(lat) || lat < -90 || lat > 90) {
+        console.log("Invalid latitude:", latitude);
+        lat = null;
+      }
+    }
+    
+    if (longitude !== null && longitude !== undefined && longitude !== "" && !isNaN(Number(longitude))) {
+      lng = Number(longitude);
+      if (isNaN(lng) || lng < -180 || lng > 180) {
+        console.log("Invalid longitude:", longitude);
+        lng = null;
+      }
+    }
+
+    console.log("Creating post - received:", { latitude, longitude, location, text: text?.substring(0, 50) });
+    console.log("Creating post - parsed coords:", { lat, lng });
+
+    const postData = {
       text,
       location: location || "",
-      latitude: latitude ? parseFloat(latitude) : undefined,
-      longitude: longitude ? parseFloat(longitude) : undefined,
       user: user._id,
-      postedAt: postedAt ? new Date(postedAt) : undefined,
-    });
+    };
+
+    // Add coordinates if both are valid numbers
+    if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
+      postData.latitude = lat;
+      postData.longitude = lng;
+      console.log("✓ Adding coordinates to post:", { latitude: lat, longitude: lng });
+    } else {
+      console.log("✗ No valid coordinates - lat:", lat, "lng:", lng);
+    }
+
+    if (postedAt) {
+      postData.postedAt = new Date(postedAt);
+    }
+
+    const post = await Post.create(postData);
+    console.log("Post created:", { id: post._id, hasLat: !!post.latitude, hasLng: !!post.longitude });
 
     return res.status(201).json({ id: post._id });
-  } catch (_error) {
+  } catch (error) {
+    console.error("Error creating post:", error);
     return res.status(500).json({ error: "failed to create post" });
   }
 });
@@ -38,16 +76,25 @@ router.get("/", async (_req, res) => {
       .limit(100);
 
     return res.json(
-      posts.map((p) => ({
-        id: p._id,
-        text: p.text,
-        location: p.location,
-        latitude: p.latitude,
-        longitude: p.longitude,
-        postedAt: p.postedAt,
-        user: p.user,
-        likes: p.likes,
-      }))
+      posts.map((p) => {
+        const postObj = {
+          id: p._id,
+          _id: p._id,
+          text: p.text,
+          location: p.location || "",
+          postedAt: p.postedAt,
+          user: p.user,
+          likes: p.likes || [],
+        };
+        
+        // Include coordinates if they exist
+        if (p.latitude != null && p.longitude != null) {
+          postObj.latitude = p.latitude;
+          postObj.longitude = p.longitude;
+        }
+        
+        return postObj;
+      })
     );
   } catch (_error) {
     return res.status(500).json({ error: "failed to list posts" });

@@ -7,6 +7,7 @@ export default function Map({ posts = [], onLocationSelect, userLocation }) {
   const map = useRef(null);
   const markersRef = useRef([]);
   const [mapError, setMapError] = useState(false);
+  const [mapLoaded, setMapLoaded] = useState(false);
 
   // Initialize map
   useEffect(() => {
@@ -45,6 +46,7 @@ export default function Map({ posts = [], onLocationSelect, userLocation }) {
 
       map.current.on("load", () => {
         console.log("Map loaded successfully");
+        setMapLoaded(true);
       });
 
       map.current.addControl(new mapboxgl.NavigationControl(), "top-right");
@@ -85,9 +87,15 @@ export default function Map({ posts = [], onLocationSelect, userLocation }) {
     }
   }, [userLocation]);
 
-  // Update markers when posts change
+  // Update markers when posts change or map loads
   useEffect(() => {
-    if (!map.current || mapError) return;
+    if (!map.current || mapError || !mapLoaded) {
+      console.log("Marker update skipped:", { hasMap: !!map.current, mapError, mapLoaded });
+      return;
+    }
+
+    console.log("Updating markers for", posts.length, "posts");
+    console.log("Posts with coordinates:", posts.filter(p => p.latitude && p.longitude).length);
 
     // Remove existing markers
     markersRef.current.forEach((marker) => marker.remove());
@@ -95,33 +103,60 @@ export default function Map({ posts = [], onLocationSelect, userLocation }) {
 
     // Add markers for posts with coordinates
     posts.forEach((post) => {
-      if (post.latitude && post.longitude) {
-        const el = document.createElement("div");
-        el.className = "custom-marker";
-        el.style.width = "32px";
-        el.style.height = "32px";
-        el.style.borderRadius = "50%";
-        el.style.backgroundColor = "#ef4444";
-        el.style.border = "3px solid white";
-        el.style.cursor = "pointer";
-        el.style.boxShadow = "0 2px 4px rgba(0,0,0,0.3)";
+      if (post.latitude && post.longitude && !isNaN(post.latitude) && !isNaN(post.longitude)) {
+        try {
+          const el = document.createElement("div");
+          el.className = "custom-marker";
+          el.style.width = "32px";
+          el.style.height = "32px";
+          el.style.borderRadius = "50%";
+          el.style.backgroundColor = "#ef4444";
+          el.style.border = "3px solid white";
+          el.style.cursor = "pointer";
+          el.style.boxShadow = "0 2px 4px rgba(0,0,0,0.3)";
 
-        const marker = new mapboxgl.Marker(el)
-          .setLngLat([post.longitude, post.latitude])
-          .setPopup(
-            new mapboxgl.Popup({ offset: 25 }).setHTML(
-              `<div class="text-black p-2">
-                <p class="font-semibold">${post.user?.username || "User"}</p>
-                <p class="text-sm">${post.text.substring(0, 50)}${post.text.length > 50 ? "..." : ""}</p>
-              </div>`
+          const lng = parseFloat(post.longitude);
+          const lat = parseFloat(post.latitude);
+
+          console.log(`Adding marker for post at [${lng}, ${lat}]`);
+
+          const marker = new mapboxgl.Marker(el)
+            .setLngLat([lng, lat])
+            .setPopup(
+              new mapboxgl.Popup({ offset: 25 }).setHTML(
+                `<div style="padding: 8px; color: black;">
+                  <p style="font-weight: 600; margin-bottom: 4px;">${(post.user?.username || "User").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+                  <p style="font-size: 12px; color: #666;">${(post.text.substring(0, 50) + (post.text.length > 50 ? "..." : "")).replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+                </div>`
+              )
             )
-          )
-          .addTo(map.current);
+            .addTo(map.current);
 
-        markersRef.current.push(marker);
+          markersRef.current.push(marker);
+        } catch (error) {
+          console.error("Error adding marker for post:", error, post);
+        }
       }
     });
-  }, [posts, mapError]);
+
+    console.log("Markers added:", markersRef.current.length);
+
+    // Fit map to show all markers if there are any
+    if (markersRef.current.length > 0) {
+      const bounds = new mapboxgl.LngLatBounds();
+      markersRef.current.forEach((marker) => {
+        bounds.extend(marker.getLngLat());
+      });
+      
+      // Only fit bounds if we have multiple markers, or if there's no user location set
+      if (markersRef.current.length > 1 || !userLocation) {
+        map.current.fitBounds(bounds, {
+          padding: { top: 50, bottom: 50, left: 50, right: 50 },
+          maxZoom: 15,
+        });
+      }
+    }
+  }, [posts, mapError, mapLoaded, userLocation]);
 
   if (mapError) {
     const token = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -144,10 +179,10 @@ export default function Map({ posts = [], onLocationSelect, userLocation }) {
   }
 
   return (
-    <div className="w-full h-full rounded-3xl overflow-hidden border border-neutral-800/50 shadow-2xl relative">
-      <div ref={mapContainer} className="w-full h-full" />
+    <div className="w-full h-full rounded-3xl overflow-hidden border border-neutral-800/50 shadow-2xl relative" style={{ minHeight: "600px" }}>
+      <div ref={mapContainer} className="w-full h-full" style={{ minHeight: "600px", width: "100%" }} />
       {onLocationSelect && (
-        <div className="absolute top-2 left-2 bg-neutral-900/80 backdrop-blur-sm text-white text-xs px-3 py-2 rounded-lg border border-neutral-700/50 z-10">
+        <div className="absolute top-2 left-2 bg-neutral-900/80 backdrop-blur-sm text-white text-xs px-3 py-2 rounded-lg border border-neutral-700/50 z-10 pointer-events-none">
           Click map to set location
         </div>
       )}
