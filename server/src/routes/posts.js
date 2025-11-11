@@ -7,7 +7,7 @@ const router = Router();
 // Create post
 router.post("/", async (req, res) => {
   try {
-    const { text, location, userId, postedAt } = req.body;
+    const { text, location, latitude, longitude, userId, postedAt } = req.body;
     if (!text || !userId) {
       return res.status(400).json({ error: "text and userId are required" });
     }
@@ -17,6 +17,8 @@ router.post("/", async (req, res) => {
     const post = await Post.create({
       text,
       location: location || "",
+      latitude: latitude ? parseFloat(latitude) : undefined,
+      longitude: longitude ? parseFloat(longitude) : undefined,
       user: user._id,
       postedAt: postedAt ? new Date(postedAt) : undefined,
     });
@@ -40,6 +42,8 @@ router.get("/", async (_req, res) => {
         id: p._id,
         text: p.text,
         location: p.location,
+        latitude: p.latitude,
+        longitude: p.longitude,
         postedAt: p.postedAt,
         user: p.user,
         likes: p.likes,

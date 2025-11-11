@@ -19,7 +19,7 @@ Once the account is created, you can use the sign in page: https://ait-final-1bn
 
 URL for form result
 ---
-(TODO: if applicable, add link to page that shows results of submitting form)
+(TODO: if applicable, ad d link to page that shows results of submitting form)
 
 Navigating to the home route displays a feed if user is logged in. 
 --- 

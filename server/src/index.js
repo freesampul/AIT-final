@@ -33,6 +33,8 @@ app.get("/api/feed", async (_req, res) => {
         id: p._id,
         text: p.text,
         location: p.location,
+        latitude: p.latitude,
+        longitude: p.longitude,
         postedAt: p.postedAt,
         user: p.user,
         likes: p.likes || [],

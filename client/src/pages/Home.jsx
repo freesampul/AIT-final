@@ -7,8 +7,13 @@ export default function Home() {
   const [userId, setUserId] = useState(null);
   const [postText, setPostText] = useState("");
   const [location, setLocation] = useState("");
+  const [latitude, setLatitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
+  const [locationError, setLocationError] = useState("");
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [gettingLocation, setGettingLocation] = useState(false);
   const navigate = useNavigate();
 
   const fetchFeed = async () => {
@@ -23,6 +28,43 @@ export default function Home() {
     }
   };
 
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError("Geolocation is not supported by your browser");
+      return;
+    }
+
+    setGettingLocation(true);
+    setLocationError("");
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation([longitude, latitude]);
+        setLatitude(latitude);
+        setLongitude(longitude);
+        setGettingLocation(false);
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        setLocationError("Unable to get your location");
+        setGettingLocation(false);
+      }
+    );
+  };
+
+  const handleLocationSelect = ({ latitude, longitude }) => {
+    setLatitude(latitude);
+    setLongitude(longitude);
+    setLocationError("");
+  };
+
+  const clearLocation = () => {
+    setLatitude(null);
+    setLongitude(null);
+    setLocation("");
+  };
+
   useEffect(() => {
     // Check if user is signed in (stored in localStorage or check token)
     const storedUser = localStorage.getItem("userId");
@@ -30,7 +72,9 @@ export default function Home() {
       setIsSignedIn(true);
       setUserId(storedUser);
       fetchFeed();
+      getCurrentLocation();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCreatePost = async (e) => {
@@ -44,6 +88,8 @@ export default function Home() {
         body: JSON.stringify({
           text: postText,
           location: location || "",
+          latitude: latitude,
+          longitude: longitude,
           userId: userId,
         }),
       });
@@ -51,6 +97,8 @@ export default function Home() {
       if (res.ok) {
         setPostText("");
         setLocation("");
+        setLatitude(null);
+        setLongitude(null);
         fetchFeed();
       }
     } catch (err) {
@@ -136,21 +184,71 @@ export default function Home() {
               className="w-full px-6 py-4 bg-neutral-800/50 border border-neutral-700/50 rounded-2xl text-white placeholder:text-neutral-500 hover:border-neutral-600 focus:outline-none focus:border-white/50 focus:bg-neutral-800/70 transition-all duration-300 resize-none"
             />
           </div>
-          <div className="flex gap-4">
-            <input
-              type="text"
-              placeholder="📍 Location (optional)"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="flex-1 px-6 py-4 bg-neutral-800/50 border border-neutral-700/50 rounded-2xl text-white placeholder:text-neutral-500 hover:border-neutral-600 focus:outline-none focus:border-white/50 focus:bg-neutral-800/70 transition-all duration-300"
-            />
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-8 bg-gradient-to-r from-white to-neutral-200 text-black font-semibold py-4 rounded-2xl hover:from-neutral-100 hover:to-neutral-300 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-            >
-              {loading ? "Posting..." : "Post"}
-            </button>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                {latitude && longitude ? (
+                  <div className="px-4 py-3 bg-green-500/20 border border-green-500/30 rounded-xl flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span className="text-green-400 text-sm font-medium">
+                        Location set ({latitude.toFixed(4)}, {longitude.toFixed(4)})
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={clearLocation}
+                      className="text-green-400 hover:text-green-300 text-xs px-2 py-1 rounded"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={getCurrentLocation}
+                      disabled={gettingLocation}
+                      className="px-4 py-3 bg-neutral-800/50 border border-neutral-700/50 rounded-xl text-neutral-300 hover:bg-neutral-800/70 hover:border-neutral-600 transition-all duration-300 disabled:opacity-50 flex items-center gap-2"
+                    >
+                      {gettingLocation ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <span className="text-xs">Getting location...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          <span className="text-xs">Use my location</span>
+                        </>
+                      )}
+                    </button>
+                    <div className="flex-1 px-4 py-3 bg-neutral-800/30 border border-neutral-700/30 rounded-xl text-neutral-500 text-xs flex items-center justify-center">
+                      Or click on the map to set location
+                    </div>
+                  </div>
+                )}
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-8 bg-gradient-to-r from-white to-neutral-200 text-black font-semibold py-3 rounded-xl hover:from-neutral-100 hover:to-neutral-300 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              >
+                {loading ? "Posting..." : "Post"}
+              </button>
+            </div>
+            {locationError && (
+              <p className="text-red-400 text-xs">{locationError}</p>
+            )}
           </div>
         </form>
       </div>
@@ -235,11 +333,15 @@ export default function Home() {
             <div className="flex items-center gap-3 mb-4">
               <h2 className="text-2xl font-bold text-white">Map</h2>
             </div>
-            <div className="bg-neutral-900/50 backdrop-blur-sm border border-neutral-800/50 rounded-3xl p-4 shadow-2xl h-[600px]">
-              <Map posts={posts} />
+            <div className="h-[600px]">
+              <Map 
+                posts={posts} 
+                onLocationSelect={handleLocationSelect}
+                userLocation={userLocation}
+              />
             </div>
             <p className="text-neutral-500 text-xs mt-3 text-center">
-              Post locations will appear here
+              {posts.filter(p => p.latitude && p.longitude).length} posts with locations
             </p>
           </div>
         </div>
