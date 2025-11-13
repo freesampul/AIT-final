@@ -3,28 +3,30 @@ Milestone 03
 
 Repository Link
 ---
-(TODO: add the link to your repository in github, such as, https://github.com/[COURSE]/[REPO_NAME])
+https://github.com/freesampul/AIT-final
 
 URL for form 1 (from previous milestone) 
 ---
-(TODO: add link to a functioning form)
+Navigate to the sign in to create an acount: https://ait-final-1bnl.onrender.com/signup
+Once the account is created, you can use the sign in page: https://ait-final-1bnl.onrender.com/signin
+
 
 Special Instructions for Form 1
 ---
-(TODO: if your app requires special instructions to use or if your app requires authentication, add information here; otherwise, leave blank)
+Navigate to the sign in to create an acount: https://ait-final-1bnl.onrender.com/signup
+Once the account is created, you can use the sign in page: https://ait-final-1bnl.onrender.com/signin
 
 URL for form 2 (for current milestone)
 ---
-(TODO: if applicable, add link to page that shows results of submitting form)
+Make a post on the home page!
+Once signed in, naviagte to the main page: https://ait-final-1bnl.onrender.com
 
 Special Instructions for Form 2
 ---
-(TODO: if your app requires special instructions to use or if your app requires authentication, add information here; otherwise, leave blank)
+You'll need to type in information to post. You can also add a location by clicking a point on the map or typing one in yourself
 
 URL(s) to github repository with commits that show progress on research
 --- 
-(TODO: add link to github url that shows line or lines of code that demonstrate continued progress on research topics)
+https://github.com/freesampul/AIT-final/blob/master/client/src/components/Map.jsx
 
-References 
----
-(TODO: if applicable, links to annotated lines of code in github repository that were based off of tutorials / articles / sample projects)
+This page best shows off the map componenet, which uses the MapBox API to plot points on the map and allow users to click on a location to put it into their post
