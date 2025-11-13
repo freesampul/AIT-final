@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiEndpoint } from "../config.js";
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ export default function SignIn() {
     setSuccess(false);
 
     try {
-      const res = await fetch("http://localhost:3001/api/accounts/login", {
+      const res = await fetch(apiEndpoint("api/accounts/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ identifier, password }),

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Map from "../components/Map.jsx";
+import { apiEndpoint } from "../config.js";
 
 export default function Home() {
   const [isSignedIn, setIsSignedIn] = useState(false);
@@ -18,7 +19,7 @@ export default function Home() {
 
   const fetchFeed = async () => {
     try {
-      const res = await fetch("http://localhost:3001/api/feed");
+      const res = await fetch(apiEndpoint("api/feed"));
       if (res.ok) {
         const data = await res.json();
         setPosts(data);
@@ -92,7 +93,7 @@ export default function Home() {
     console.log("Creating post with data:", postData);
 
     try {
-      const res = await fetch("http://localhost:3001/api/posts", {
+      const res = await fetch(apiEndpoint("api/posts"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(postData),
@@ -130,7 +131,7 @@ export default function Home() {
     );
 
     try {
-      const res = await fetch(`http://localhost:3001/api/posts/${postId}/like`, {
+      const res = await fetch(apiEndpoint(`api/posts/${postId}/like`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId }),

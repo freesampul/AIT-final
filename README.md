@@ -11,6 +11,23 @@ Building site with:
 -Tailwild css
 -Mongo backend 
 
+## Environment Variables
+
+### Client (React)
+Create a `.env` file in the `client/` directory with:
+```
+VITE_API_URL=https://your-api-server.com
+VITE_MAPBOX_TOKEN=your_mapbox_token_here
+```
+
+For local development, `VITE_API_URL` can be left empty (defaults to `http://localhost:3001`).
+
+### Server (Node.js/Express)
+Create a `.env` file in the `server/` directory with:
+```
+MONGODB_URI=your_mongodb_connection_string
+PORT=3001
+```
 
 <3
 
