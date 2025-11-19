@@ -24,6 +24,7 @@ app.get("/api/feed", async (_req, res) => {
   try {
     const posts = await Post.find()
       .populate("user", "username email")
+      .populate("comments.user", "username email")
       .sort({ postedAt: -1 })
       .limit(100);
     
@@ -37,6 +38,12 @@ app.get("/api/feed", async (_req, res) => {
           postedAt: p.postedAt,
           user: p.user,
           likes: p.likes || [],
+          comments: (p.comments || []).map((c) => ({
+            _id: c._id,
+            text: c.text,
+            user: c.user,
+            createdAt: c.createdAt,
+          })),
         };
         
         // Only include coordinates if they exist and are valid numbers

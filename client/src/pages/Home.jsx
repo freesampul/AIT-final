@@ -15,6 +15,8 @@ export default function Home() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
+  const [commentTexts, setCommentTexts] = useState({}); // postId -> comment text
+  const [submittingComment, setSubmittingComment] = useState({}); // postId -> boolean
   const navigate = useNavigate();
 
   const fetchFeed = async () => {
@@ -151,6 +153,48 @@ export default function Home() {
   const isLiked = (post) => {
     if (!post.likes || !userId) return false;
     return post.likes.some((id) => String(id) === String(userId));
+  };
+
+  const handleAddComment = async (postId, e) => {
+    e.preventDefault();
+    const commentText = commentTexts[postId]?.trim();
+    if (!commentText || !userId) return;
+
+    setSubmittingComment((prev) => ({ ...prev, [postId]: true }));
+
+    try {
+      const res = await fetch(apiEndpoint(`api/posts/${postId}/comments`), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: commentText, userId }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // Optimistically update the post with the new comment
+        setPosts((prevPosts) =>
+          prevPosts.map((post) => {
+            if (post._id === postId || post.id === postId) {
+              return {
+                ...post,
+                comments: [...(post.comments || []), data.comment],
+              };
+            }
+            return post;
+          })
+        );
+        // Clear comment input
+        setCommentTexts((prev) => ({ ...prev, [postId]: "" }));
+      } else {
+        // Refresh feed on error
+        fetchFeed();
+      }
+    } catch (err) {
+      console.error("Failed to add comment:", err);
+      fetchFeed();
+    } finally {
+      setSubmittingComment((prev) => ({ ...prev, [postId]: false }));
+    }
   };
 
   if (!isSignedIn) {
@@ -301,9 +345,66 @@ export default function Home() {
                     )}
                   </div>
                 </div>
-                <div className="flex items-center justify-between pt-4 border-t border-neutral-800/50">
+
+                {/* Comments Section */}
+                <div className="mt-4 pt-4 border-t border-neutral-800/50">
+                  {/* Existing Comments */}
+                  {post.comments && post.comments.length > 0 && (
+                    <div className="space-y-3 mb-4">
+                      {post.comments.map((comment) => (
+                        <div key={comment._id} className="flex items-start gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-white/15 to-neutral-600/15 flex items-center justify-center flex-shrink-0">
+                            <span className="text-white font-semibold text-xs">
+                              {comment.user?.username?.charAt(0).toUpperCase() || "?"}
+                            </span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-semibold text-neutral-300 text-sm">
+                                {comment.user?.username || "Unknown"}
+                              </span>
+                              <span className="text-neutral-600">•</span>
+                              <span className="text-neutral-600 text-xs">
+                                {new Date(comment.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <p className="text-neutral-300 text-sm leading-relaxed">{comment.text}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Comment Input Form */}
+                  <form onSubmit={(e) => handleAddComment(post._id || post.id, e)} className="space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Write a comment..."
+                        value={commentTexts[post._id || post.id] || ""}
+                        onChange={(e) =>
+                          setCommentTexts((prev) => ({
+                            ...prev,
+                            [post._id || post.id]: e.target.value,
+                          }))
+                        }
+                        className="flex-1 px-4 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-xl text-white placeholder:text-neutral-500 hover:border-neutral-600 focus:outline-none focus:border-white/50 focus:bg-neutral-800/70 transition-all duration-300 text-sm"
+                      />
+                      <button
+                        type="submit"
+                        disabled={!commentTexts[post._id || post.id]?.trim() || submittingComment[post._id || post.id]}
+                        className="px-4 py-2 bg-neutral-700/50 text-neutral-300 rounded-xl hover:bg-neutral-700/70 hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium whitespace-nowrap"
+                      >
+                        {submittingComment[post._id || post.id] ? "..." : "Comment"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Actions Bar */}
+                <div className="flex items-center justify-between pt-4 mt-4 border-t border-neutral-800/50">
                   <button
-                    onClick={() => handleLike(post._id)}
+                    onClick={() => handleLike(post._id || post.id)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-300 ${
                       isLiked(post)
                         ? "bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30"
@@ -326,6 +427,12 @@ export default function Home() {
                       {post.likes?.length || 0}
                     </span>
                   </button>
+                  <div className="flex items-center gap-2 text-neutral-500 text-sm">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    <span>{post.comments?.length || 0}</span>
+                  </div>
                 </div>
               </div>
             ))
