@@ -72,6 +72,7 @@ router.get("/", async (_req, res) => {
   try {
     const posts = await Post.find()
       .populate("user", "username email")
+      .populate("comments.user", "username email")
       .sort({ postedAt: -1 })
       .limit(100);
 
@@ -85,6 +86,12 @@ router.get("/", async (_req, res) => {
           postedAt: p.postedAt,
           user: p.user,
           likes: p.likes || [],
+          comments: (p.comments || []).map((c) => ({
+            _id: c._id,
+            text: c.text,
+            user: c.user,
+            createdAt: c.createdAt,
+          })),
         };
         
         // Include coordinates if they exist
@@ -121,6 +128,46 @@ router.post("/:id/like", async (req, res) => {
     return res.status(200).json({ likesCount: post.likes.length });
   } catch (_error) {
     return res.status(500).json({ error: "failed to toggle like" });
+  }
+});
+
+// Add comment to a post
+router.post("/:id/comments", async (req, res) => {
+  try {
+    const { text, userId } = req.body;
+    if (!text || !userId) {
+      return res.status(400).json({ error: "text and userId are required" });
+    }
+
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ error: "post not found" });
+
+    const user = await Account.findById(userId);
+    if (!user) return res.status(404).json({ error: "user not found" });
+
+    post.comments.push({
+      text: text.trim(),
+      user: user._id,
+      createdAt: new Date(),
+    });
+
+    await post.save();
+
+    // Populate the comment's user before returning
+    await post.populate("comments.user", "username email");
+
+    const newComment = post.comments[post.comments.length - 1];
+    return res.status(201).json({
+      comment: {
+        _id: newComment._id,
+        text: newComment.text,
+        user: newComment.user,
+        createdAt: newComment.createdAt,
+      },
+    });
+  } catch (error) {
+    console.error("Error adding comment:", error);
+    return res.status(500).json({ error: "failed to add comment" });
   }
 });
 
